@@ -1,0 +1,104 @@
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from 'src/user/user.entity';
+import * as bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from 'uuid';
+import { MailerService } from '@nestjs-modules/mailer';
+import { JwtService } from '@nestjs/jwt';
+
+import { Department, Gender } from 'src/constants/user';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    @InjectRepository(User)
+    private userRepo: Repository<User>, // 操作用户表
+    private mailerService: MailerService, // 发送邮件
+    private jwtService: JwtService, // 👈 注入 JwtService
+  ) {}
+
+  async register(dto: {
+    fullname: string;
+    email: string;
+    password: string;
+    department: Department;
+    gender: Gender;
+  }) {
+    const hashedPassword: string = await bcrypt.hash(dto.password, 10);
+    const token = uuidv4(); // 生成一个唯一的 verificationToken，用于用户邮箱验证。
+
+    // 创建用户对象并存数据库
+    const user = this.userRepo.create({
+      ...dto,
+      password: hashedPassword,
+      verificationToken: token,
+      isVerified: false,
+    });
+
+    await this.userRepo.save(user);
+
+    // 发送邮件
+    const url = `http://localhost:3000/auth/verify?token=${token}`;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      await this.mailerService.sendMail({
+        to: dto.email,
+        subject: 'Activate your account',
+        html: `Click <a href="${url}">here</a> to activate your account`,
+      });
+    } catch (error) {
+      console.error('Failed to send verification email:', error);
+    }
+
+    return {
+      message:
+        'Registration successful. Please check your email to activate account.',
+    };
+  }
+
+  async verifyToken(token: string) {
+    const user = await this.userRepo.findOneBy({ verificationToken: token });
+    if (!user) return null;
+
+    user.isVerified = true;
+    user.verificationToken = null;
+    return await this.userRepo.save(user);
+  }
+
+  async login(dto: { email: string; password: string }) {
+    // 1. 查找用户
+    const user = await this.userRepo.findOneBy({ email: dto.email });
+    if (!user) throw new UnauthorizedException('Invalid credentials');
+
+    // 2. 检查是否激活 (你的需求核心)
+    if (!user.isVerified) {
+      throw new ForbiddenException(
+        'Please verify your email before logging in.',
+      );
+    }
+
+    // 3. 验证密码
+    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+    if (!isPasswordValid)
+      throw new UnauthorizedException('Invalid credentials');
+
+    // 4. 生成 JWT Payload
+    const payload = { sub: user.id, email: user.email, dept: user.department };
+
+    // 5. 返回 Access Token 和用户信息
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+      user: {
+        id: user.id,
+        fullname: user.fullname,
+        gender: user.gender,
+        department: user.department,
+      },
+    };
+  }
+}
