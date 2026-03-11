@@ -25,4 +25,10 @@ export class User {
 
   @Column({ type: 'varchar', nullable: true }) // <- 这里
   verificationToken: string | null; // 用来存临时验证 token
+
+  @Column({ type: 'varchar', nullable: true })
+  otp: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  otpExpiresAt: Date | null;
 }

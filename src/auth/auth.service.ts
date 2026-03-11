@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   UnauthorizedException,
@@ -99,6 +100,79 @@ export class AuthService {
         gender: user.gender,
         department: user.department,
       },
+    };
+  }
+
+  async forgotPassword(dto: { email: string }) {
+    const user = await this.userRepo.findOneBy({ email: dto.email });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const expires = new Date();
+    expires.setMinutes(expires.getMinutes() + 10);
+
+    user.otp = otp;
+    user.otpExpiresAt = expires;
+
+    await this.userRepo.save(user);
+
+    await this.mailerService.sendMail({
+      to: dto.email,
+      subject: 'Reset your password',
+      html: `Your OTP is <b>${otp}</b>. It will expire in 10 minutes.`,
+    });
+
+    return {
+      message: 'OTP sent to your email',
+    };
+  }
+
+  async resetPassword(dto: {
+    email: string;
+    otp: string;
+    newPassword: string;
+    confirmNewPassword: string;
+  }) {
+    const { email, otp, newPassword, confirmNewPassword } = dto;
+
+    const user = await this.userRepo.findOneBy({ email });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // 1️⃣ 检查 OTP
+    if (!user.otp || user.otp !== otp) {
+      throw new UnauthorizedException('Invalid OTP');
+    }
+
+    // 2️⃣ 检查 OTP 是否过期
+    if (!user.otpExpiresAt || user.otpExpiresAt < new Date()) {
+      throw new UnauthorizedException('OTP expired');
+    }
+
+    // 3️⃣ 检查 password match
+    if (newPassword !== confirmNewPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    // 4️⃣ hash password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedPassword;
+
+    // 5️⃣ 清除 OTP
+    user.otp = null;
+    user.otpExpiresAt = null;
+
+    await this.userRepo.save(user);
+
+    return {
+      message: 'Password reset successfully',
     };
   }
 }

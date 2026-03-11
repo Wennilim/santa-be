@@ -31,4 +31,22 @@ export class AuthController {
     const user = await this.authService.verifyToken(token);
     if (!user) throw new NotFoundException('Invalid token');
   }
+
+  @Post('forgotPassword')
+  async forgotPassword(@Body() dto: { email: string }) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Post('resetPassword')
+  async resetPassword(
+    @Body()
+    dto: {
+      email: string;
+      otp: string;
+      newPassword: string;
+      confirmNewPassword: string;
+    },
+  ) {
+    return this.authService.resetPassword(dto);
+  }
 }
