@@ -11,6 +11,7 @@ import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { MailerService } from '@nestjs-modules/mailer';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 import { Department, Gender } from 'src/constants/user';
 
@@ -21,6 +22,7 @@ export class AuthService {
     private userRepo: Repository<User>, // 操作用户表
     private mailerService: MailerService, // 发送邮件
     private jwtService: JwtService, // 👈 注入 JwtService
+    private configService: ConfigService, // 👈 注入 ConfigService
   ) {}
 
   async register(dto: {
@@ -44,9 +46,10 @@ export class AuthService {
     await this.userRepo.save(user);
 
     // 发送邮件
-    const url = `http://localhost:3000/auth/verify?token=${token}`;
+    const backendUrl =
+      this.configService.get<string>('BACKEND_URL') || 'http://localhost:3000';
+    const url = `${backendUrl}/auth/verify?token=${token}`;
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       await this.mailerService.sendMail({
         to: dto.email,
         subject: 'Activate your account',
@@ -72,8 +75,19 @@ export class AuthService {
   }
 
   async login(dto: { email: string; password: string }) {
-    // 1. 查找用户
-    const user = await this.userRepo.findOneBy({ email: dto.email });
+    // 1. 查找用户 (显式包含 password 用于校验)
+    const user = await this.userRepo.findOne({
+      where: { email: dto.email },
+      select: [
+        'id',
+        'email',
+        'password',
+        'isVerified',
+        'fullname',
+        'gender',
+        'department',
+      ],
+    });
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     // 2. 检查是否激活 (你的需求核心)
@@ -104,7 +118,7 @@ export class AuthService {
   }
 
   async forgotPassword(dto: { email: string }) {
-    const user = await this.userRepo.findOneBy({ email: dto.email });
+    const user = await this.userRepo.findOne({ where: { email: dto.email } });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -139,7 +153,10 @@ export class AuthService {
   }) {
     const { email, otp, newPassword, confirmNewPassword } = dto;
 
-    const user = await this.userRepo.findOneBy({ email });
+    const user = await this.userRepo.findOne({
+      where: { email },
+      select: ['id', 'email', 'otp', 'otpExpiresAt', 'password'],
+    });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -173,6 +190,64 @@ export class AuthService {
 
     return {
       message: 'Password reset successfully',
+    };
+  }
+
+  async seedUsers() {
+    const defaultPassword = 'Password123!';
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+    const departments = Object.values(Department);
+    const mockWishlists = [
+      [
+        {
+          id: 1,
+          name: 'Chengdu Round Ticket',
+          link: 'https://www.malaysiaairlines.com/my/en/home.html',
+        },
+        { id: 2, name: 'Mr PA Blind Box', link: 'https://www.kikagoods.com' },
+      ],
+      [
+        {
+          id: 1,
+          name: 'Proton Emas 7 PHEV',
+          link: 'https://localhost:3000/proton.com/',
+        },
+      ],
+      [
+        { id: 1, name: 'Mechanical Keyboard', link: '#' },
+        { id: 2, name: 'Coffee Beans', link: '#' },
+        { id: 3, name: 'Cozy Blanket', link: '#' },
+      ],
+    ];
+
+    const usersToSeed: User[] = [];
+
+    for (let i = 11; i <= 15; i++) {
+      const email = `user${i}@example.com`;
+      const existing = await this.userRepo.findOneBy({ email });
+
+      if (!existing) {
+        usersToSeed.push(
+          this.userRepo.create({
+            fullname: `Mock User ${i}`,
+            email,
+            password: hashedPassword,
+            department: departments[i % departments.length],
+            gender: i % 2 === 0 ? Gender.MALE : Gender.FEMALE,
+            isVerified: true,
+            wishlist: mockWishlists[i % mockWishlists.length],
+          }),
+        );
+      }
+    }
+
+    if (usersToSeed.length > 0) {
+      await this.userRepo.save(usersToSeed);
+    }
+
+    return {
+      message: `Seeded ${usersToSeed.length} new users.`,
+      default_password: defaultPassword,
     };
   }
 }
