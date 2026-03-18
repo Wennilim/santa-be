@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ChristmasDrawModule } from './christmas-draw/christmas-draw.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 
 @Module({
   imports: [
@@ -49,6 +50,10 @@ import { ChristmasDrawModule } from './christmas-draw/christmas-draw.module';
     }),
 
     ChristmasDrawModule,
+
+    WishlistModule,
   ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
