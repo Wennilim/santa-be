@@ -31,7 +31,4 @@ export class User {
 
   @Column({ type: 'timestamp', nullable: true, select: false })
   otpExpiresAt: Date | null;
-
-  @Column({ type: 'simple-json', nullable: true })
-  wishlist: any[] | null;
 }

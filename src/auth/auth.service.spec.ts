@@ -1,9 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
+jest.mock('uuid', () => ({
+  v4: () => 'mock-uuid',
+}));
 import { AuthService } from './auth.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from 'src/user/user.entity';
 import { MailerService } from '@nestjs-modules/mailer';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { SendWishlistService } from 'src/send-wishlist/send-wishlist.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -23,6 +28,14 @@ describe('AuthService', () => {
         {
           provide: JwtService,
           useValue: { signAsync: jest.fn() },
+        },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn() },
+        },
+        {
+          provide: SendWishlistService,
+          useValue: {},
         },
       ],
     }).compile();

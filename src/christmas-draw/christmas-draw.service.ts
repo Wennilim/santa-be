@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { User } from '../user/user.entity';
 import { ChristmasDraw } from './christmas-draw-entity';
 import { ChristmasDrawResult } from './christmas-draw-result-entity';
+import { SendWishlistService } from '../send-wishlist/send-wishlist.service';
 
 @Injectable()
 export class ChristmasDrawService {
@@ -21,6 +22,8 @@ export class ChristmasDrawService {
 
     @InjectRepository(User)
     private userRepo: Repository<User>,
+
+    private readonly sendWishlistService: SendWishlistService,
   ) {}
 
   // Fisher–Yates shuffle
@@ -32,7 +35,12 @@ export class ChristmasDrawService {
     return array;
   }
 
-  @Cron('0 0 1 11 *', {
+  // @Cron('0 0 1 11 *', {
+  //   name: 'generate_christmas_draw',
+  //   timeZone: 'Asia/Singapore',
+  // })
+
+  @Cron('16 15 * * *', {
     name: 'generate_christmas_draw',
     timeZone: 'Asia/Singapore',
   })
@@ -167,12 +175,16 @@ export class ChristmasDrawService {
       throw new NotFoundException('Recipient not found');
     }
 
+    const wishlist = await this.sendWishlistService.getAllSendWishlists(
+      result.receiver.id,
+    );
+
     return {
       id: result.id,
       recipient_name: result.receiver.fullname,
       gender: result.receiver.gender,
       department: result.receiver.department,
-      wishlist: result.receiver.wishlist || [],
+      wishlist: wishlist || [],
     };
   }
 

@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ChristmasDrawModule } from './christmas-draw/christmas-draw.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { SendWishlistModule } from './send-wishlist/send-wishlist.module';
 
 @Module({
   imports: [
@@ -52,6 +53,8 @@ import { WishlistModule } from './wishlist/wishlist.module';
     ChristmasDrawModule,
 
     WishlistModule,
+
+    SendWishlistModule,
   ],
   controllers: [],
   providers: [],

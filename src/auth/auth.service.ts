@@ -1,8 +1,10 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   UnauthorizedException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { MailerService } from '@nestjs-modules/mailer';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { SendWishlistService } from 'src/send-wishlist/send-wishlist.service';
 
 import { Department, Gender } from 'src/constants/user';
 
@@ -23,6 +26,8 @@ export class AuthService {
     private mailerService: MailerService, // 发送邮件
     private jwtService: JwtService, // 👈 注入 JwtService
     private configService: ConfigService, // 👈 注入 ConfigService
+    @Inject(forwardRef(() => SendWishlistService))
+    private readonly sendWishlistService: SendWishlistService,
   ) {}
 
   async register(dto: {
@@ -200,23 +205,21 @@ export class AuthService {
     const mockWishlists = [
       [
         {
-          id: 1,
-          name: 'Chengdu Round Ticket',
+          wish: 'Chengdu Round Ticket',
           link: 'https://www.malaysiaairlines.com/my/en/home.html',
         },
-        { id: 2, name: 'Mr PA Blind Box', link: 'https://www.kikagoods.com' },
+        { wish: 'Mr PA Blind Box', link: 'https://www.kikagoods.com' },
       ],
       [
         {
-          id: 1,
-          name: 'Proton Emas 7 PHEV',
+          wish: 'Proton Emas 7 PHEV',
           link: 'https://localhost:3000/proton.com/',
         },
       ],
       [
-        { id: 1, name: 'Mechanical Keyboard', link: '#' },
-        { id: 2, name: 'Coffee Beans', link: '#' },
-        { id: 3, name: 'Cozy Blanket', link: '#' },
+        { wish: 'Mechanical Keyboard', link: '#' },
+        { wish: 'Coffee Beans', link: '#' },
+        { wish: 'Cozy Blanket', link: '#' },
       ],
     ];
 
@@ -235,7 +238,6 @@ export class AuthService {
             department: departments[i % departments.length],
             gender: i % 2 === 0 ? Gender.MALE : Gender.FEMALE,
             isVerified: true,
-            wishlist: mockWishlists[i % mockWishlists.length],
           }),
         );
       }
@@ -243,6 +245,13 @@ export class AuthService {
 
     if (usersToSeed.length > 0) {
       await this.userRepo.save(usersToSeed);
+
+      // Now seed the wishlists
+      for (let i = 0; i < usersToSeed.length; i++) {
+        const userIndex = i + 11; // Matching the loop above
+        const wishItems = mockWishlists[userIndex % mockWishlists.length];
+        await this.sendWishlistService.createMany(usersToSeed[i].id, wishItems);
+      }
     }
 
     return {
