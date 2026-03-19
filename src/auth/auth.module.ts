@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { SendWishlistModule } from 'src/send-wishlist/send-wishlist.module';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
+import { AdminGuard } from './admin.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
@@ -26,8 +27,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
     forwardRef(() => SendWishlistModule),
   ],
-  providers: [AuthService, AuthGuard],
+  providers: [AuthService, AuthGuard, AdminGuard],
   controllers: [AuthController],
-  exports: [AuthGuard, JwtModule],
+  exports: [AuthGuard, AdminGuard, JwtModule],
 })
 export class AuthModule {}

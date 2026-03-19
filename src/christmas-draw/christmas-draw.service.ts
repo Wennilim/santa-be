@@ -35,12 +35,7 @@ export class ChristmasDrawService {
     return array;
   }
 
-  // @Cron('0 0 1 11 *', {
-  //   name: 'generate_christmas_draw',
-  //   timeZone: 'Asia/Singapore',
-  // })
-
-  @Cron('16 15 * * *', {
+  @Cron('0 0 1 11 *', {
     name: 'generate_christmas_draw',
     timeZone: 'Asia/Singapore',
   })

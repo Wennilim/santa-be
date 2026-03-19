@@ -37,6 +37,11 @@ export class AuthService {
     department: Department;
     gender: Gender;
   }) {
+    const adminUsername = this.configService.get<string>('ADMIN_USERNAME');
+    if (dto.email === adminUsername) {
+      throw new BadRequestException('Email already in use');
+    }
+
     const hashedPassword: string = await bcrypt.hash(dto.password, 10);
     const token = uuidv4(); // 生成一个唯一的 verificationToken，用于用户邮箱验证。
 
@@ -80,6 +85,27 @@ export class AuthService {
   }
 
   async login(dto: { email: string; password: string }) {
+    // 0. Check for Hardcoded Admin
+    const adminUsername = this.configService.get<string>('ADMIN_USERNAME');
+    const adminPassword = this.configService.get<string>('ADMIN_PASSWORD');
+
+    if (
+      dto.email.trim().toLowerCase() === adminUsername?.trim().toLowerCase() &&
+      dto.password === adminPassword
+    ) {
+      const payload = { sub: 'admin', username: adminUsername, role: 'admin' };
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+        user: {
+          id: 0,
+          fullname: 'Admin',
+          gender: 'female',
+          department: 'Operation',
+          role: 'admin',
+        },
+      };
+    }
+
     // 1. 查找用户 (显式包含 password 用于校验)
     const user = await this.userRepo.findOne({
       where: { email: dto.email },
@@ -108,7 +134,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
 
     // 4. 生成 JWT Payload
-    const payload = { sub: user.id, email: user.email, dept: user.department };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      dept: user.department,
+      role: 'user',
+    };
 
     // 5. 返回 Access Token 和用户信息
     return {
