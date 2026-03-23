@@ -46,11 +46,12 @@ export class ChristmasDrawService {
     return `${segment()}-${segment()}-${segment()}-${segment()}`;
   }
 
-  // @Cron('0 0 1 11 *', {
+  // @Cron('10 19 * * *', {
   //   name: 'generate_christmas_draw',
   //   timeZone: 'Asia/Singapore',
   // })
-  @Cron('10 19 * * *', {
+
+  @Cron('0 0 1 11 *', {
     name: 'generate_christmas_draw',
     timeZone: 'Asia/Singapore',
   })
@@ -319,10 +320,6 @@ export class ChristmasDrawService {
 
     // 当前年份的 12月24日 13:00
     const unlockTime = new Date(now.getFullYear(), 11, 24, 13, 0, 0);
-
-    // const unlockTime = new Date(now.getFullYear(), 0, 0, 20, 48, 0);
-
-    console.log(unlockTime);
 
     // 🚫 未到时间
     if (now < unlockTime) {
