@@ -47,4 +47,12 @@ export class ChristmasDrawController {
   reset(@Param('year', ParseIntPipe) year: number) {
     return this.christmasDrawService.resetDraw(year);
   }
+
+  @Get('/my-giftcode')
+  @UseGuards(AuthGuard)
+  getMyGiftCode(@Req() req: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const userId = req.user.sub as number;
+    return this.christmasDrawService.checkGiftCode(userId);
+  }
 }

@@ -1,3 +1,4 @@
+import { type TAnimal } from 'src/constants/user';
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
@@ -31,4 +32,22 @@ export class User {
 
   @Column({ type: 'timestamp', nullable: true, select: false })
   otpExpiresAt: Date | null;
+
+  @Column({ default: false })
+  hasSpin: boolean;
+
+  @Column({ default: false })
+  hasSendWishlist: boolean;
+
+  @Column({ default: false })
+  hasSubmitGift: boolean;
+
+  @Column({ type: 'varchar', nullable: true })
+  nicknameId: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  nickName: TAnimal | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  giftCode: string | null;
 }

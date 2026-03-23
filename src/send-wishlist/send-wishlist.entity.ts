@@ -11,6 +11,6 @@ export class SendWishlist {
   @Column({ nullable: true })
   link?: string;
 
-  @Column()
-  userId: number;
+  @Column({ type: 'varchar', nullable: true })
+  nicknameId: string | null;
 }

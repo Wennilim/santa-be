@@ -21,7 +21,9 @@ export class SendWishlistController {
   async getAllSendWishlists(
     @Req() req: { user: { sub: number } },
   ): Promise<SendWishlist[]> {
-    return await this.sendWishlistService.getAllSendWishlists(req.user.sub);
+    return await this.sendWishlistService.getAllSendWishlists(
+      String(req.user.sub),
+    );
   }
 
   @Post()
@@ -37,5 +39,12 @@ export class SendWishlistController {
     @Req() req: { user: { sub: number } },
   ): Promise<{ message: string }> {
     return await this.sendWishlistService.deleteAllByUser(req.user.sub);
+  }
+
+  @Post('submit-gift')
+  async submitGift(
+    @Req() req: { user: { sub: number } },
+  ): Promise<{ message: string }> {
+    return await this.sendWishlistService.markHasSubmitGift(req.user.sub);
   }
 }

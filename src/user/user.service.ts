@@ -16,8 +16,28 @@ export class UserService {
     return this.userRepo.save(user);
   }
 
-  findAll() {
-    return this.userRepo.find();
+  async findAllbyAdmin() {
+    const users = await this.userRepo.find();
+    return users.map((user) => {
+      return {
+        id: user.id,
+        fullname: user.fullname,
+        email: user.email,
+        hasSpin: user.hasSpin,
+        hasSendWishlist: user.hasSendWishlist,
+        hasSubmitGift: user.hasSubmitGift,
+      };
+    });
+  }
+
+  async findAllbyUser() {
+    const users = await this.userRepo.find();
+    return users.map((user) => {
+      return {
+        nicknameId: user.nicknameId,
+        nickName: user.nickName,
+      };
+    });
   }
 
   async remove(id: number): Promise<void> {

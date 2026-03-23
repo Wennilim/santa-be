@@ -10,6 +10,7 @@ import {
 import { CreateUserDto } from 'src/dto/user';
 import { UserService } from './user.service';
 import { AdminGuard } from 'src/auth/admin.guard';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('users')
 export class UserController {
@@ -20,9 +21,16 @@ export class UserController {
     return this.userService.create(dto);
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Get('/get-all')
+  @UseGuards(AdminGuard)
+  findAllRealUsers() {
+    return this.userService.findAllbyAdmin();
+  }
+
+  @Get('/all')
+  @UseGuards(AuthGuard)
+  findAllUsers() {
+    return this.userService.findAllbyUser();
   }
 
   @Delete(':id')

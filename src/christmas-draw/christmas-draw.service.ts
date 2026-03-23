@@ -10,6 +10,7 @@ import { User } from '../user/user.entity';
 import { ChristmasDraw } from './christmas-draw-entity';
 import { ChristmasDrawResult } from './christmas-draw-result-entity';
 import { SendWishlistService } from '../send-wishlist/send-wishlist.service';
+import { zoo } from '../constants/user';
 
 @Injectable()
 export class ChristmasDrawService {
@@ -35,7 +36,21 @@ export class ChristmasDrawService {
     return array;
   }
 
-  @Cron('0 0 1 11 *', {
+  private generateGiftCode(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const segment = () =>
+      Array.from(
+        { length: 4 },
+        () => chars[Math.floor(Math.random() * chars.length)],
+      ).join('');
+    return `${segment()}-${segment()}-${segment()}-${segment()}`;
+  }
+
+  // @Cron('0 0 1 11 *', {
+  //   name: 'generate_christmas_draw',
+  //   timeZone: 'Asia/Singapore',
+  // })
+  @Cron('10 19 * * *', {
     name: 'generate_christmas_draw',
     timeZone: 'Asia/Singapore',
   })
@@ -127,6 +142,15 @@ export class ChristmasDrawService {
 
       const savedDraw = await manager.save(draw);
 
+      // Assign giftCode, nickName, and nicknameId to each user
+      for (const user of users) {
+        user.giftCode = this.generateGiftCode();
+        const randomIndex = Math.floor(Math.random() * zoo.length);
+        user.nickName = zoo[randomIndex];
+        user.nicknameId = String(randomIndex + 1);
+        await manager.save(user);
+      }
+
       const results = shuffled.map((giver, i) => ({
         draw: savedDraw,
         giver,
@@ -137,6 +161,17 @@ export class ChristmasDrawService {
     });
 
     console.log(`Christmas draw ${year} generated successfully`);
+  }
+
+  // 标记用户已经转了轮盘
+  async markHasSpin(userId: number) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.hasSpin = true;
+    await this.userRepo.save(user);
   }
 
   /*
@@ -171,14 +206,13 @@ export class ChristmasDrawService {
     }
 
     const wishlist = await this.sendWishlistService.getAllSendWishlists(
-      result.receiver.id,
+      String(result.receiver.id),
     );
 
     return {
-      id: result.id,
-      recipient_name: result.receiver.fullname,
-      gender: result.receiver.gender,
-      department: result.receiver.department,
+      recipient_nickname: result.receiver.nickName,
+      recipient_giftCode: result.receiver.giftCode,
+      recipient_gender: result.receiver.gender,
       wishlist: wishlist || [],
     };
   }
@@ -256,6 +290,60 @@ export class ChristmasDrawService {
 
     return {
       status: draw.status,
+    };
+  }
+
+  /*
+    每年 1 月 1 日重置用户的 giftCode 和 nickName
+  */
+  @Cron('0 0 1 1 *', {
+    name: 'reset_christmas_draw_data',
+    timeZone: 'Asia/Singapore',
+  })
+  async resetUserDrawData() {
+    console.log('Resetting Christmas draw data for the new year...');
+    await this.userRepo.update(
+      {},
+      {
+        giftCode: null,
+        nickName: null,
+        nicknameId: null,
+      },
+    );
+    console.log('User draw data reset successfully.');
+  }
+
+  // 只有在12月24日 13:00 后 才能检查自己的gift code
+  async checkGiftCode(userId: number) {
+    const now = new Date();
+
+    // 当前年份的 12月24日 13:00
+    const unlockTime = new Date(now.getFullYear(), 11, 24, 13, 0, 0);
+
+    // const unlockTime = new Date(now.getFullYear(), 0, 0, 20, 48, 0);
+
+    console.log(unlockTime);
+
+    // 🚫 未到时间
+    if (now < unlockTime) {
+      throw new ForbiddenException(
+        'Gift code & Nickname is not available yet. Come back after 1 PM on Dec 24 🎄',
+      );
+    }
+
+    // ✅ 正常逻辑
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      fullname: user.fullname,
+      nickname: user.nickName,
+      giftCode: user.giftCode,
     };
   }
 }

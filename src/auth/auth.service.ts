@@ -93,7 +93,7 @@ export class AuthService {
       dto.email.trim().toLowerCase() === adminUsername?.trim().toLowerCase() &&
       dto.password === adminPassword
     ) {
-      const payload = { sub: 'admin', username: adminUsername, role: 'admin' };
+      const payload = { sub: 0, username: adminUsername, role: 'admin' };
       return {
         access_token: await this.jwtService.signAsync(payload),
         user: {
