@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { CreateSendWishlistDto } from 'src/dto/wishlist';
+import { CreateSendWishlistDto, SubmitGiftDto } from 'src/dto/wishlist';
 import { SendWishlistService } from './send-wishlist.service';
 import { SendWishlist } from './send-wishlist.entity';
 
@@ -43,8 +43,16 @@ export class SendWishlistController {
 
   @Post('submit-gift')
   async submitGift(
-    @Req() req: { user: { sub: number } },
+    @Req() req: { user: { sub: number; role?: string } },
+    @Body() body: SubmitGiftDto,
   ): Promise<{ message: string }> {
-    return await this.sendWishlistService.markHasSubmitGift(req.user.sub);
+    const userId =
+      req.user.role === 'admin' && body.userId ? body.userId : req.user.sub;
+    const hasSubmitGift =
+      body.hasSubmitGift !== undefined ? body.hasSubmitGift : true;
+    return await this.sendWishlistService.markHasSubmitGift(
+      userId,
+      hasSubmitGift,
+    );
   }
 }

@@ -1,7 +1,9 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
@@ -34,4 +36,14 @@ export class CreateSendWishlistDto {
   @ValidateNested({ each: true })
   @Type(() => WishlistItemDto)
   items: WishlistItemDto[];
+}
+
+export class SubmitGiftDto {
+  @IsNumber()
+  @IsOptional()
+  userId?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  hasSubmitGift?: boolean;
 }

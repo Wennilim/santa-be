@@ -33,8 +33,15 @@ export class SendWishlistService {
     const existing = await this.sendWishlistRepo.find({
       where: { nicknameId },
     });
+
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     if (existing.length > 0) {
-      await this.userRepo.update(userId, { hasSendWishlist: true });
+      user.hasSendWishlist = true;
+      await this.userRepo.save(user);
       throw new BadRequestException(
         'You have already submitted your wishlist. You may save your other wishes for next year.',
       );
@@ -43,7 +50,9 @@ export class SendWishlistService {
     const sendWishlists = items.map((item) =>
       this.sendWishlistRepo.create({ nicknameId, ...item }),
     );
-    await this.userRepo.update(userId, { hasSendWishlist: true });
+
+    user.hasSendWishlist = true;
+    await this.userRepo.save(user);
     return await this.sendWishlistRepo.save(sendWishlists);
   }
 
@@ -61,8 +70,17 @@ export class SendWishlistService {
     return { message: 'Wishlist deleted successfully.' };
   }
 
-  async markHasSubmitGift(userId: number): Promise<{ message: string }> {
-    await this.userRepo.update(userId, { hasSubmitGift: true });
-    return { message: 'Gift has been submitted to admin successfully.' };
+  async markHasSubmitGift(
+    userId: number,
+    hasSubmitGift = true,
+  ): Promise<{ message: string }> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.hasSubmitGift = hasSubmitGift;
+    await this.userRepo.save(user);
+    return { message: 'Gift submission status updated successfully.' };
   }
 }
