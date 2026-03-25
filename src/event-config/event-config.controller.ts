@@ -13,6 +13,7 @@ import {
   UpdateEventConfigDto,
 } from 'src/dto/create-event-config.dto';
 import { EventConfigService } from './event-config.service';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('event-config')
 export class EventConfigController {
@@ -20,6 +21,7 @@ export class EventConfigController {
 
   // 用户可访问
   @Get()
+  @UseGuards(AuthGuard)
   getEventConfig() {
     return this.service.findOne();
   }
