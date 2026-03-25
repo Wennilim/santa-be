@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
   forwardRef,
 } from '@nestjs/common';
@@ -15,8 +16,10 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { SendWishlistService } from 'src/send-wishlist/send-wishlist.service';
+import { activationEmailTemplate } from 'src/mail/templates/activation.template';
 
 import { Department, Gender } from 'src/constants/user';
+import { receiveOTP } from 'src/mail/templates/receiveOTP.template';
 
 @Injectable()
 export class AuthService {
@@ -62,8 +65,8 @@ export class AuthService {
     try {
       await this.mailerService.sendMail({
         to: dto.email,
-        subject: 'Activate your account',
-        html: `Click <a href="${url}">here</a> to activate your account`,
+        subject: '🎄 Activate Your ATOZ Secret Santa Account',
+        html: activationEmailTemplate(url),
       });
     } catch (error) {
       console.error('Failed to send verification email:', error);
@@ -157,7 +160,7 @@ export class AuthService {
     const user = await this.userRepo.findOne({ where: { email: dto.email } });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new NotFoundException('User not found');
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -173,7 +176,7 @@ export class AuthService {
     await this.mailerService.sendMail({
       to: dto.email,
       subject: 'Reset your password',
-      html: `Your OTP is <b>${otp}</b>. It will expire in 10 minutes.`,
+      html: receiveOTP(otp),
     });
 
     return {
