@@ -1,19 +1,18 @@
 import {
+  Body,
   Controller,
+  Delete,
   Get,
   Post,
   Put,
-  Body,
   UseGuards,
-  Delete,
 } from '@nestjs/common';
-import { EventConfigService } from './event-config.service';
+import { AdminGuard } from 'src/auth/admin.guard';
 import {
   CreateEventConfigDto,
   UpdateEventConfigDto,
 } from 'src/dto/create-event-config.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { AdminGuard } from 'src/auth/admin.guard';
+import { EventConfigService } from './event-config.service';
 
 @Controller('event-config')
 export class EventConfigController {
@@ -21,7 +20,6 @@ export class EventConfigController {
 
   // 用户可访问
   @Get()
-  @UseGuards(AuthGuard)
   getEventConfig() {
     return this.service.findOne();
   }
