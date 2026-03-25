@@ -122,7 +122,7 @@ export class AuthService {
         'department',
       ],
     });
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    if (!user) throw new NotFoundException('Invalid email or password');
 
     // 2. 检查是否激活 (你的需求核心)
     if (!user.isVerified) {
@@ -134,7 +134,7 @@ export class AuthService {
     // 3. 验证密码
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid)
-      throw new UnauthorizedException('Invalid credentials');
+      throw new NotFoundException('Invalid email or password');
 
     // 4. 生成 JWT Payload
     const payload = {
@@ -198,7 +198,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new NotFoundException('User not found');
     }
 
     // 1️⃣ 检查 OTP
