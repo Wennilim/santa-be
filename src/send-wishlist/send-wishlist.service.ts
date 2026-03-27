@@ -51,9 +51,12 @@ export class SendWishlistService {
       this.sendWishlistRepo.create({ nicknameId, ...item }),
     );
 
+    const result = await this.sendWishlistRepo.save(sendWishlists);
+
     user.hasSendWishlist = true;
     await this.userRepo.save(user);
-    return await this.sendWishlistRepo.save(sendWishlists);
+
+    return result;
   }
 
   async deleteAllByUser(userId: number): Promise<{ message: string }> {
@@ -61,6 +64,12 @@ export class SendWishlistService {
     const existing = await this.sendWishlistRepo.find({
       where: { nicknameId },
     });
+
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (user && user.hasSendWishlist) {
+      user.hasSendWishlist = false;
+      await this.userRepo.save(user);
+    }
 
     if (existing.length === 0) {
       throw new NotFoundException('No wishlist found for this user.');
@@ -82,5 +91,13 @@ export class SendWishlistService {
     user.hasSubmitGift = hasSubmitGift;
     await this.userRepo.save(user);
     return { message: 'Gift submission status updated successfully.' };
+  }
+
+  async checkHasSubmitted(userId: number): Promise<{ hasSubmitted: boolean }> {
+    const nicknameId = String(userId);
+    const existing = await this.sendWishlistRepo.findOne({
+      where: { nicknameId },
+    });
+    return { hasSubmitted: !!existing };
   }
 }

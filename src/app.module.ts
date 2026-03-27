@@ -9,6 +9,7 @@ import { ChristmasDrawModule } from './christmas-draw/christmas-draw.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { SendWishlistModule } from './send-wishlist/send-wishlist.module';
 import { EventConfigModule } from './event-config/event-config.module';
+import { FeedbackModule } from './feedback/feedback.module';
 
 @Module({
   imports: [
@@ -58,6 +59,8 @@ import { EventConfigModule } from './event-config/event-config.module';
     SendWishlistModule,
 
     EventConfigModule,
+
+    FeedbackModule,
   ],
   controllers: [],
   providers: [],

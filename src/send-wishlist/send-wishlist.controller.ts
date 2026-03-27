@@ -17,6 +17,13 @@ import { SendWishlist } from './send-wishlist.entity';
 export class SendWishlistController {
   constructor(private readonly sendWishlistService: SendWishlistService) {}
 
+  @Get('check')
+  async checkHasSubmitted(
+    @Req() req: { user: { sub: number } },
+  ): Promise<{ hasSubmitted: boolean }> {
+    return await this.sendWishlistService.checkHasSubmitted(req.user.sub);
+  }
+
   @Get()
   async getAllSendWishlists(
     @Req() req: { user: { sub: number } },

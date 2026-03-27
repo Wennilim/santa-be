@@ -30,6 +30,7 @@ export class WishlistService {
   }
 
   async deleteWishlist(id: number) {
+    console.log(`[DEBUG] Calling WishlistService.deleteWishlist for id ${id}`);
     const result = await this.wishlistRepo.delete(id);
 
     if (result.affected === 0) {
