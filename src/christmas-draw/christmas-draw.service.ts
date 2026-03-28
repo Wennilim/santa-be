@@ -295,7 +295,7 @@ export class ChristmasDrawService {
   }
 
   /*
-    每年 1 月 1 日重置用户的 giftCode 和 nickName
+    每年 1 月 1 日重置用户的状态和清除心愿单
   */
   @Cron('0 0 1 1 *', {
     name: 'reset_christmas_draw_data',
@@ -303,15 +303,24 @@ export class ChristmasDrawService {
   })
   async resetUserDrawData() {
     console.log('Resetting Christmas draw data for the new year...');
+
+    // 1. 重置用户表的各类标记位
     await this.userRepo.update(
       {},
       {
         giftCode: null,
         nickName: null,
         nicknameId: null,
+        hasSpin: false,
+        hasSendWishlist: false,
+        hasSubmitGift: false,
       },
     );
-    console.log('User draw data reset successfully.');
+
+    // 2. 清空心愿单表
+    await this.sendWishlistService.deleteAll();
+
+    console.log('User draw data and wishlists reset successfully.');
   }
 
   // 只有在12月24日 13:00 后 才能检查自己的gift code

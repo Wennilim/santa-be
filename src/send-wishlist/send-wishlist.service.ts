@@ -100,4 +100,8 @@ export class SendWishlistService {
     });
     return { hasSubmitted: !!existing };
   }
+
+  async deleteAll(): Promise<void> {
+    await this.sendWishlistRepo.clear();
+  }
 }
