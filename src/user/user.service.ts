@@ -26,6 +26,8 @@ export class UserService {
         hasSpin: user.hasSpin,
         hasSendWishlist: user.hasSendWishlist,
         hasSubmitGift: user.hasSubmitGift,
+        gender: user.gender,
+        department: user.department,
       };
     });
   }
