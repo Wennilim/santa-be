@@ -15,7 +15,7 @@ export const receiveOTP = (otp: string) => {
           <tr>
             <td align="center" style="background:#c0392b;padding:40px 32px 32px;">
               <p style="margin:0;font-size:48px;letter-spacing:8px;">🎅🎄🎁</p>
-              <h1 style="margin:16px 0 0;color:#ffffff;font-size:28px;font-weight:800;letter-spacing:1px;text-shadow:0 2px 4px rgba(0,0,0,0.2);">ATOZ Secret Santa</h1>
+              <h1 style="margin:16px 0 0;color:#ffffff;font-size:28px;font-weight:800;letter-spacing:1px;text-shadow:0 2px 4px rgba(0,0,0,0.2);">Santa Workshop</h1>
               <p style="margin:8px 0 0;color:#ffd7d7;font-size:15px;">✨ The most wonderful time of the year ✨</p>
             </td>
           </tr>
@@ -80,7 +80,7 @@ export const receiveOTP = (otp: string) => {
           <tr>
             <td align="center" style="background-color:#f4f6f8;padding:24px 32px;border-top:1px solid #e8ecf0;">
               <p style="margin:0 0 4px;color:#95a5a6;font-size:13px;">If you didn't create an account, please ignore this email.</p>
-              <p style="margin:0;color:#bdc3c7;font-size:12px;">© ${new Date().getFullYear()} ATOZ Secret Santa 🎄</p>
+              <p style="margin:0;color:#bdc3c7;font-size:12px;">© ${new Date().getFullYear()} Santa Workshop 🎄</p>
             </td>
           </tr>
 

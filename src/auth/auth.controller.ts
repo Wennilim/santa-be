@@ -1,10 +1,10 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Query,
   NotFoundException,
+  Post,
+  Query,
   Redirect,
 } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
@@ -36,6 +36,11 @@ export class AuthController {
   @Post('forgotPassword')
   async forgotPassword(@Body() dto: { email: string }) {
     return this.authService.forgotPassword(dto);
+  }
+
+  @Post('verifyOTP')
+  async verifyOTP(@Body() dto: { email: string; otp: string }) {
+    return this.authService.verifyOTP(dto);
   }
 
   @Post('resetPassword')

@@ -45,6 +45,11 @@ export class AuthService {
       throw new BadRequestException('Email already in use');
     }
 
+    const exists = await this.userRepo.existsBy({ email: dto.email });
+    if (exists) {
+      throw new BadRequestException('Email already in use');
+    }
+
     const hashedPassword: string = await bcrypt.hash(dto.password, 10);
     const token = uuidv4(); // 生成一个唯一的 verificationToken，用于用户邮箱验证。
 
@@ -65,7 +70,7 @@ export class AuthService {
     try {
       await this.mailerService.sendMail({
         to: dto.email,
-        subject: '🎄 Activate Your ATOZ Secret Santa Account',
+        subject: '🎄 Activate Your Santa Workshop Account',
         html: activationEmailTemplate(url),
       });
     } catch (error) {
@@ -181,6 +186,33 @@ export class AuthService {
 
     return {
       message: 'OTP sent to your email',
+    };
+  }
+
+  async verifyOTP(dto: { email: string; otp: string }) {
+    const { email, otp } = dto;
+
+    const user = await this.userRepo.findOne({
+      where: { email: email.trim().toLowerCase() },
+      select: ['id', 'email', 'otp', 'otpExpiresAt'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // 1️⃣ 检查 OTP
+    if (!user.otp || user.otp !== otp) {
+      throw new BadRequestException('Invalid OTP');
+    }
+
+    // 2️⃣ 检查 OTP 是否过期
+    if (!user.otpExpiresAt || user.otpExpiresAt < new Date()) {
+      throw new UnauthorizedException('OTP expired');
+    }
+
+    return {
+      message: 'OTP verified successfully',
     };
   }
 
