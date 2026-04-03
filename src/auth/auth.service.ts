@@ -291,8 +291,8 @@ export class AuthService {
 
     const usersToSeed: User[] = [];
 
-    for (let i = 11; i <= 15; i++) {
-      const email = `user${i}@example.com`;
+    for (let i = 1; i <= 15; i++) {
+      const email = `mock_user${i}@atoz-software.tech`;
       const existing = await this.userRepo.findOneBy({ email });
 
       if (!existing) {
@@ -314,7 +314,7 @@ export class AuthService {
 
       // Now seed the wishlists
       for (let i = 0; i < usersToSeed.length; i++) {
-        const userIndex = i + 11; // Matching the loop above
+        const userIndex = i + 1; // Matching the loop above
         const wishItems = mockWishlists[userIndex % mockWishlists.length];
         await this.sendWishlistService.createMany(usersToSeed[i].id, wishItems);
       }
