@@ -59,7 +59,7 @@ export class ChristmasDrawService {
     const year = new Date().getFullYear();
 
     // 防止重复生成
-    const existingDraw = await this.drawRepo.findOne({ where: { year } });
+    const existingDraw = await this.drawRepo.existsBy({ year });
     if (existingDraw) {
       console.log(`Draw for year ${year} already exists.`);
       return;
