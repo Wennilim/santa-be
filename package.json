@@ -1,8 +1,11 @@
 {
   "name": "santa_be",
   "version": "0.0.1",
+  "engines": {
+    "node": "18.x"
+  },
   "description": "",
-  "author": "",
+  "author": "Wen Ni Lim",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

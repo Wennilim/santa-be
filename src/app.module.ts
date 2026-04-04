@@ -27,7 +27,14 @@ import { FeedbackModule } from './feedback/feedback.module';
         database: config.get<string>('DB_NAME'),
 
         autoLoadEntities: true,
-        synchronize: true, // 生产环境要关掉
+        synchronize: false, // 生产环境要关掉
+        ssl: {
+          // 告诉 TypeORM 使用 SSL 连接
+          // 因为 AWS RDS 使用的是它自己签发的 SSL 证书，Node.js 默认不认识这个证书机构，
+          // 会拒绝连接。加上这行代码就是告诉 Node.js：“我知道这是 AWS 的证书，虽然你不认识，但它是安全的，
+          // 直接连吧!
+          rejectUnauthorized: false,
+        },
       }),
     }),
 
