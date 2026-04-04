@@ -17,6 +17,8 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors({ origin: WHITE_LIST_URL, credentials: true }); // 允许前端域名
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT || 3000;
+  await app.listen(port, '0.0.0.0');
+  console.log(`Santa API is running on port: ${port}`);
 }
 void bootstrap();
