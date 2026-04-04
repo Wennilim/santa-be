@@ -2,7 +2,7 @@
   "name": "santa_be",
   "version": "0.0.1",
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "description": "",
   "author": "Wen Ni Lim",
