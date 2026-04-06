@@ -1,5 +1,5 @@
 # 阶段 1：编译环境 (Builder)
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -16,15 +16,15 @@ COPY . .
 RUN npm run build
 
 # 阶段 2：生产运行环境 (Production)
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
 # 再次复制 package.json
 COPY package*.json ./
 
-# 这一次只安装生产环境需要的依赖（去掉开发工具，让镜像变得非常小）
-RUN npm ci --only=production
+# 这一次只安装生产环境需要的依赖（使用最新语法的 --omit=dev 替代旧的 --only=production）
+RUN npm ci --omit=dev
 
 # 从 builder 阶段把编译好的 dist 文件夹拿过来
 COPY --from=builder /app/dist ./dist

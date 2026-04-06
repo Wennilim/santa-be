@@ -26,8 +26,7 @@ export class AuthController {
   }
 
   @Get('verify')
-  // @Redirect('http://my-santa-workshop.netlify.app/login?verified=true', 302)
-  @Redirect('http://localhost:5173/login?verified=true', 302)
+  @Redirect(`${process.env.FRONTEND_URL}/login?verified=true`, 302)
   async verifyEmail(@Query('token') token: string) {
     const user = await this.authService.verifyToken(token);
     if (!user) throw new NotFoundException('Invalid token');

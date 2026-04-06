@@ -41,7 +41,7 @@ export function activationEmailTemplate(url: string): string {
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="padding:8px 0 32px;">
-                    <a href="${url}" style="display:inline-block;background:linear-gradient(135deg,#c0392b,#e74c3c);color:#ffffff;text-decoration:none;padding:16px 48px;border-radius:50px;font-size:17px;font-weight:700;letter-spacing:0.5px;box-shadow:0 4px 16px rgba(192,57,43,0.4);">
+                    <a href="${url}" style="display:inline-block;background:#c0392b;color:#ffffff;text-decoration:none;padding:16px 48px;border-radius:50px;font-size:17px;font-weight:700;letter-spacing:0.5px;box-shadow:0 4px 16px rgba(192,57,43,0.4);">
                       🎁 Activate My Account
                     </a>
                   </td>
